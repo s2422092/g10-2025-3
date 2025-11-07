@@ -1,16 +1,12 @@
 1まずファイル内に.envというファイルを作成する
-2次に.gitignoreファイルを作成する
-3.gitignoreファイル内に
 
-# .gitignore
 
-# 環境変数ファイルをGit管理から除外
-.env
+
 
 
 と記述する
 
-4.envファイル内に以下のように記述する
+3.envファイル内に以下のように記述する
 
 host=''
 dbname=''
@@ -28,17 +24,9 @@ git commit -m "Remove .env from version control"
 git push
 
 
-6.今度は.gitignore1というファイルを作成すしその中に
-# .gitignore1 の内容
-.gitignore
-と記述する
-
-7.そして作成した.gitignore1を以下のコードで実行する
-git rm --cached .gitignore
-git commit -m "Remove .gitignore from version control"
-git push
-
 これで完了
+
+
 
 require 'vendor/autoload.php';
 
