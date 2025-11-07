@@ -87,7 +87,7 @@
 </main>
 
 <footer>
-    &copy; <?= date("Y") ?> My Diary App. All rights reserved.
+    &copy; <?= date("Y") ?> 一言×色日記 All rights reserved.
 </footer>
 
 </body>
