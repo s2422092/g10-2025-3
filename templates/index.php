@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Diary App</title>
+    <title>一言×色日記</title>
     <style>
         body {
             font-family: "Hiragino Sans", "Helvetica Neue", sans-serif;
@@ -13,7 +13,7 @@
             padding: 0;
         }
         header {
-            background-color: #3b82f6;
+            background-color: #f9fafb;
             color: white;
             padding: 20px;
             text-align: center;
@@ -67,8 +67,8 @@
 <body>
 
 <header>
-    <h1>🌸 My Diary App</h1>
-    <p>毎日の気持ちを残す、あなた専用の日記アプリ</p>
+    <h1>一言×色日記</h1>
+    <p>あなたの気持ちを色で表現する日記アプリです。</p>
 </header>
 
 <main>
@@ -77,8 +77,9 @@
     <p>今日の日付：</p>
     <div class="date"><?= date("Y年m月d日") ?></div>
 
-    <a href="new_diary.php" class="button">📝 新しい日記を書く</a>
-
+    <a href="login.php" class="button">ログイン</a>
+    <a href="signup.php" class="button">新規登録</a>
+  
     <div class="db-status">
         <hr>
         <p><strong>接続状態：</strong> <?= $db_message ?></p>
