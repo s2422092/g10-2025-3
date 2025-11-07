@@ -1,0 +1,12 @@
+🔍 各ページへのアクセス例
+ファイル名	ブラウザURL
+index.php	http://localhost:8000/index.php
+
+new_diary.php	http://localhost:8000/new_diary.php
+
+view_diary.php	http://localhost:8000/view_diary.php
+
+（index.php はデフォルトページなので、 / だけでもOKです）
+
+ページ移動方法
+<a href="../index.php">トップに戻る</a>
