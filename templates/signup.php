@@ -54,7 +54,15 @@
         <br>
 
         <button type="submit">新規登録</button>
-    </form>
 
+    </form>
+    <?php
+// 単純なリンク
+echo '<a href="index.php">トップページへ</a>';
+?>
+<?php
+// 単純なリンク
+echo '<a href="login.php">ログインページへ</a>';
+?>
 </body>
 </html>

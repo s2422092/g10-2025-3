@@ -47,6 +47,13 @@
 
         <button type="submit">ログイン</button>
     </form>
-
+<?php
+// 単純なリンク
+echo '<a href="index.php">トップページへ</a>';
+?>
+<?php
+// 単純なリンク
+echo '<a href="signup.php">新規登録ページへ</a>';
+?>
 </body>
 </html>
