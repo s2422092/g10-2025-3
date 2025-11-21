@@ -38,3 +38,9 @@ $dbname = $_ENV['dbname'];
 $user = $_ENV['user'];
 $password = $_ENV['password'];
 これで読み込める
+
+
+
+PGPASSWORD=C1d8rp3nKUp4Ajdh8NyHUTopXpooYIvA psql -h dpg-d4g18ebe5dus739hcjrg-a.singapore-postgres.render.com -U g1020253 g1020253
+
+これをターミナルに打ち込むとd bと接続できる
