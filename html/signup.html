@@ -1,0 +1,144 @@
+<?php
+
+session_start();
+
+$env = parse_ini_file(__DIR__ . '/../.env');
+$host = $env['host'];
+$dbname = $env['dbname'];
+$user = $env['user'];
+$password = $env['password'];
+// DB 接続
+try {
+    $pdo = new PDO("pgsql:host=$host;dbname=$dbname", $user, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("DB接続エラー: " . $e->getMessage());
+}
+
+// フォームが送信された場合
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $email = trim($_POST['email'] ?? '');
+    $username = trim($_POST['username'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
+}
+    // 入力値の検証
+    if (empty($email) || empty($username) || empty($password) || empty($confirm_password)) {
+        $error_message = "すべてのフィールドを入力してください。";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error_message = "有効なメールアドレスを入力してください。";
+    } elseif ($password !== $confirm_password) {
+        $error_message = "パスワードが一致しません。";
+    } elseif (strlen($password) < 8) {
+        $error_message = "パスワードは8文字以上である必要があります。";
+    } 
+    else {
+        try {
+            // データベース接続
+            $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $password);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            
+            // メールアドレスが既に使用されているか確認
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+            $stmt->execute([$email]);
+            
+            if ($stmt->rowCount() > 0) {
+                $error_message = "このメールアドレスは既に登録されています。";
+            } else {
+                // ユーザー名が既に使用されているか確認
+                $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
+                $stmt->execute([$username]);
+                
+                if ($stmt->rowCount() > 0) {
+                    $error_message = "このユーザー名は既に使用されています。";
+                } 
+                else {
+                    // パスワードのハッシュ化
+                    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                    
+                    // ユーザーをデータベースに登録
+                    $stmt = $pdo->prepare("INSERT INTO users (email, username, password) VALUES (?, ?, ?)");
+                    $stmt->execute([$email, $username, $hashed_password]);
+                    
+                    // 成功メッセージを設定してログインページにリダイレクト
+                    $_SESSION['success_message'] = "アカウント登録が完了しました。ログインしてください。";
+                    header("Location: login.php");
+                    exit();
+                }
+            }
+        } catch (PDOException $e) {
+            $error_message = "データベースエラー: " . $e->getMessage();
+        }
+    }
+
+
+?>
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一言×色日記 - サインアップ</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+        
+        h1 {
+            color: #4a6fa5;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        form {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 320px;
+        }
+    </style>
+</head>
+
+<body>
+  <h1>新規登録</h1>
+    
+    <?php if (!empty($error_message)): ?>
+        <div class="error"><?php echo htmlspecialchars($error_message); ?></div>
+    <?php endif; ?>
+    
+    <?php if (!empty($success_message)): ?>
+        <div class="success"><?php echo htmlspecialchars($success_message); ?></div>
+    <?php endif; ?>
+    
+    <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
+        <label for="email">メールアドレス：</label>
+        <input type="email" id="email" name="email" required value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
+        
+        <label for="username"><div>ユーザー名：</div></label>
+        <input type="text" id="username" name="username" required value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>">
+        
+        <label for="password"><div>パスワード：</div></label>
+        <input type="password" id="password" name="password" required>
+        
+        <label for="confirm_password"><div>パスワード（確認）：</div></label>
+        <input type="password" id="confirm_password" name="confirm_password" required>
+
+        <button type="submit">新規登録</button>
+        
+        <div class="links">
+            <a href="login.php">ログインはこちら</a>
+            <a href="index.php">トップページへ戻る</a>
+        </div>
+    </form>
+</body>
+</html>

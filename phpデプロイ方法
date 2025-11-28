@@ -1,0 +1,16 @@
+
+このコードでphpがあるかを確認する
+php -v
+
+ない場合は以下のコードをターミナルで実行する
+brew install php
+このモジュールを入れる
+
+
+これをターミナルに記述
+ここは自分のプロジェクトのパスに変更すること
+cd /Users/yugo_suzuki/zemi/g10-2025-3
+
+
+php -S localhost:8000 -t templates
+

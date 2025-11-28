@@ -1,0 +1,46 @@
+1まずファイル内に.envというファイルを作成する
+
+
+
+
+
+と記述する
+
+3.envファイル内に以下のように記述する
+
+host=''
+dbname=''
+user=''
+password=''
+
+
+これを入れる
+
+5.次に以下のコードをターミナルで実行する
+この3行のコマンドは、**「.env を Git の管理対象から外す（＝リポジトリから削除する）」**ための処理です。
+
+git rm --cached .env
+git commit -m "Remove .env from version control"
+git push
+
+
+これで完了
+
+
+
+require 'vendor/autoload.php';
+
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+$host = $_ENV['host'];
+$dbname = $_ENV['dbname'];
+$user = $_ENV['user'];
+$password = $_ENV['password'];
+これで読み込める
+
+
+
+PGPASSWORD=C1d8rp3nKUp4Ajdh8NyHUTopXpooYIvA psql -h dpg-d4g18ebe5dus739hcjrg-a.singapore-postgres.render.com -U g1020253 g1020253
+
+これをターミナルに打ち込むとd bと接続できる

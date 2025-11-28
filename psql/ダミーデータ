@@ -1,0 +1,47 @@
+-- =========================
+-- 1. users ダミーデータ
+-- =========================
+INSERT INTO public.users (username, password, email, is_public)
+VALUES
+('alice', 'password1', 'alice@example.com', TRUE),
+('bob', 'password2', 'bob@example.com', TRUE),
+('carol', 'password3', 'carol@example.com', TRUE),
+('dave', 'password4', 'dave@example.com', TRUE),
+('eve', 'password5', 'eve@example.com', TRUE),
+('frank', 'password6', 'frank@example.com', TRUE),
+('grace', 'password7', 'grace@example.com', TRUE),
+('heidi', 'password8', 'heidi@example.com', TRUE),
+('ivan', 'password9', 'ivan@example.com', TRUE),
+('judy', 'password10', 'judy@example.com', TRUE);
+
+-- =========================
+-- 2. color_emotions_flat ダミーデータ
+-- =========================
+INSERT INTO public.color_emotions_flat (color_id, color_name, emotion_id, feeling_text)
+VALUES
+(1, '赤', 1, '元気'),
+(2, '青', 2, '落ち着き'),
+(3, '黄色', 3, '楽しい'),
+(4, '緑', 4, '安心'),
+(5, 'オレンジ', 5, '明るい'),
+(6, '紫', 6, '神秘的'),
+(7, 'ピンク', 7, '優しい'),
+(8, '茶色', 8, '穏やか'),
+(9, '灰色', 9, '静か'),
+(10, '黒', 10, 'クール');
+
+-- =========================
+-- 3. diaries ダミーデータ
+-- =========================
+INSERT INTO public.diaries (content, user_id, color_id, time_slot)
+VALUES
+('今日はとても元気だった！', 1, 1, '朝'),
+('少し疲れた一日だった', 2, 2, '昼'),
+('友達と楽しい時間を過ごした', 3, 3, '夕方'),
+('散歩してリフレッシュできた', 4, 4, '朝'),
+('新しいことに挑戦した', 5, 5, '夜'),
+('静かに読書した', 6, 6, '昼'),
+('カフェでゆったり過ごした', 7, 7, '夕方'),
+('仕事が順調で嬉しかった', 8, 8, '朝'),
+('少し落ち込んだ一日だった', 9, 9, '夜'),
+('映画を見て楽しかった', 10, 10, '夕方');
