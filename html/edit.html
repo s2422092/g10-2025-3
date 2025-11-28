@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日記編集 (HTML確認版)</title>
+    <style>
+        body { font-family: "Hiragino Sans", sans-serif; background: #f9fafb; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { margin-top: 0; font-size: 1.5em; color: #333; text-align: center; }
+        
+        .date-display { text-align: center; font-size: 1.2em; font-weight: bold; margin-bottom: 20px; color: #555; }
+        
+        /* フォーム要素 */
+        label { display: block; margin-bottom: 10px; font-weight: bold; color: #555; }
+        textarea { width: 100%; height: 150px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 1em; box-sizing: border-box; resize: vertical; font-family: inherit; }
+        
+        /* 色選択のデザイン */
+        .color-picker { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .color-option { position: relative; cursor: pointer; }
+        .color-option input { position: absolute; opacity: 0; cursor: pointer; }
+        
+        .color-circle { 
+            width: 40px; height: 40px; border-radius: 50%; display: inline-block; 
+            border: 3px solid transparent; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        /* 選択されたとき */
+        .color-option input:checked + .color-circle {
+            border-color: #333; transform: scale(1.1);
+        }
+        .color-label { display: block; text-align: center; font-size: 0.8em; color: #666; margin-top: 4px; }
+
+        /* ボタン */
+        .btn-group { display: flex; justify-content: space-between; margin-top: 30px; }
+        .button { padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; border: none; cursor: pointer; font-size: 1em; }
+        
+        .btn-save { background: #3b82f6; color: white; }
+        .btn-save:hover { background: #2563eb; }
+        
+        .btn-back { background: white; color: #555; border: 1px solid #ccc; }
+        .btn-back:hover { background: #f0f0f0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>日記を書く</h1>
+    
+    <div id="dateDisplay" class="date-display">Loading...</div>
+
+    <form id="diaryForm">
+        <label>今日の気分（色）を選んでください</label>
+        <div class="color-picker">
+            <label class="color-option">
+                <input type="radio" name="color" value="1" checked>
+                <span class="color-circle" style="background-color: #ffb3b3;"></span>
+                <span class="color-label">赤</span>
+            </label>
+            <label class="color-option">
+                <input type="radio" name="color" value="2">
+                <span class="color-circle" style="background-color: #b3d9ff;"></span>
+                <span class="color-label">青</span>
+            </label>
+            <label class="color-option">
+                <input type="radio" name="color" value="3">
+                <span class="color-circle" style="background-color: #ffffb3;"></span>
+                <span class="color-label">黄色</span>
+            </label>
+            <label class="color-option">
+                <input type="radio" name="color" value="4">
+                <span class="color-circle" style="background-color: #c2f0c2;"></span>
+                <span class="color-label">緑</span>
+            </label>
+            <label class="color-option">
+                <input type="radio" name="color" value="5">
+                <span class="color-circle" style="background-color: #ffd9b3;"></span>
+                <span class="color-label">オレンジ</span>
+            </label>
+            <label class="color-option">
+                <input type="radio" name="color" value="6">
+                <span class="color-circle" style="background-color: #e6b3ff;"></span>
+                <span class="color-label">紫</span>
+            </label>
+            <label class="color-option">
+                <input type="radio" name="color" value="10">
+                <span class="color-circle" style="background-color: #b3b3b3;"></span>
+                <span class="color-label">黒</span>
+            </label>
+        </div>
+
+        <label>今日の一言</label>
+        <textarea placeholder="今日はどんな一日でしたか？（HTML確認用のため保存されません）"></textarea>
+
+        <div class="btn-group">
+            <a href="personal.html" class="button btn-back">キャンセル</a>
+            
+            <button type="button" class="button btn-save" onclick="saveDiary()">保存する</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // -------------------------------------------------
+    // HTML版専用のJavaScriptロジック
+    // -------------------------------------------------
+    
+    // 1. URLから日付パラメータを取得 (?date=2025-01-01)
+    const params = new URLSearchParams(window.location.search);
+    const dateParam = params.get('date');
+    
+    // 今日の日付を取得（パラメータがない場合用）
+    const today = new Date();
+    const defaultDate = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    
+    const targetDate = dateParam || defaultDate;
+
+    // 2. 画面に日付を表示
+    document.getElementById('dateDisplay').textContent = targetDate.replace(/-/g, '/') + " の日記";
+
+    // 3. 保存ボタンが押されたときの動き（デモ）
+    function saveDiary() {
+        // 本当はここでデータベースに保存しますが、HTML版なのでアラートを出します
+        alert(`【動作確認】\n日付: ${targetDate}\n\n保存しました！（デモ動作）\nカレンダーに戻ります。`);
+        
+        // カレンダーページに戻る
+        window.location.href = "personal.html";
+    }
+</script>
+
+</body>
+</html>
