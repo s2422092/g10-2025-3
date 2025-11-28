@@ -1,4 +1,9 @@
 <?php
+// ------------------------------
+// 1. セッションの開始
+// ------------------------------
+// セッションを利用するすべてのページ（ファイル）の先頭で実行します。
+session_start();
 
 // 動作確認済み //
 
@@ -21,13 +26,15 @@ try {
 // ------------------------------
 // POST送信時の処理
 // ------------------------------
+$error = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username']);
     $password = $_POST['password'];
     
     try {
         // ユーザー検索
-        $sql = "SELECT * FROM users WHERE username = :username";
+        $sql = "SELECT user_id, username, password FROM users WHERE username = :username";
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':username', $username);
         $stmt->execute();
@@ -35,8 +42,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if ($user && password_verify($password, $user['password'])) {
             // ログイン成功
-            session_start();
-            $_SESSION['user_id'] = $user['id'];
+            // session_start() は既にファイルの先頭で実行済みです。
+            
+            // ユーザー情報をセッションに格納
+            $_SESSION['user_id'] = $user['user_id']; // ★ 'user_id' キーを使用
             $_SESSION['username'] = $user['username'];
             
             // リダイレクト
