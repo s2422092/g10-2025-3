@@ -1,175 +1,172 @@
-
 <!DOCTYPE html>
-<htmlg="ja">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>個人ページ</title>
+    <title>マイカレンダー (HTML確認版)</title>
     <style>
-        body {
-            font-family: "Hiragino Sans", "Helvetica Neue", sans-serif;
-            background-color: #f9fafb;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #f9fafb;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        main {
-            max-width: 700px;
-            margin: 40px auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            padding: 30px;
-        }
-        h1 {
-            margin-top: 0;
-            font-size: 2em;
-            color: #333;
-        }
-        p {
-            color: #555;
-        }
-        .date {
-            font-size: 1.1em;
-            margin: 10px 0 30px;
-            color: #666;
-        }
-        .button {
-            display: inline-block;
-            background-color: #3b82f6;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: 0.3s;
-        }
-        .button:hover {
-            background-color: #2563eb;
-        }
-        footer {
-            text-align: center;
-            margin-top: 50px;
-            font-size: 0.9em;
-            color: #777;
-        }
-        .db-status {
-            text-align: center;
-            margin-top: 30px;
-            font-size: 1em;
-        }
-        .calendar {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 20px;
-        }
-        .calendar th, .calendar td {
-            border: 1px solid #ddd;
-            width: 14.2%;
-            height: 50px;
-            text-align: center;
-        }
-        .calendar td a {
-            display: block;
-            width: 100%;
-            height: 100%;
-            padding: 2px 0;
-            text-decoration: none;
-            color: #333;
-        }
-        .calendar td a:hover {
-            background-color: #e6f0ff;
-        }
+        /* デザインはそのまま維持 */
+        body { font-family: "Hiragino Sans", sans-serif; background: #f9fafb; margin: 0; padding: 0; }
+        header { background: #f9fafb; padding: 20px; text-align: center; }
+        main { max-width: 700px; margin: 20px auto; background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); padding: 30px; }
+        h1 { margin: 0 0 10px 0; font-size: 1.8em; color: #333; }
 
+        .month-nav { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; font-size: 1.2em; }
+        .month-nav button { background: none; border: none; color: #3b82f6; font-weight: bold; font-size: 1em; cursor: pointer; }
+        .month-nav button:hover { text-decoration: underline; }
+
+        .calendar { width: 100%; border-collapse: collapse; }
+        .calendar th, .calendar td { border: 1px solid #ddd; width: 14.2%; height: 60px; text-align: center; }
+        .calendar th { background: #f0f0f0; height: 40px; }
+        
+        /* マス全体をクリック可能に */
+        .calendar td a { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; text-decoration: none; color: #333; font-weight: bold; }
+        .calendar td a:hover { opacity: 0.6; }
+        
+        footer { text-align: center; margin-top: 40px; color: #777; font-size: 0.9em; }
+        .footer-buttons { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; }
+        .button { background: #3b82f6; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; }
+        .button:hover { background: #2563eb; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>マイページ</h1>
-    <p></p>
+    <h1>マイカレンダー</h1>
+    <div class="month-nav">
+        <button id="prevBtn">＜ 前月</button>
+        <span id="currentMonthLabel"></span>
+        <button id="nextBtn">次月 ＞</button>
+    </div>
 </header>
 
 <main>
-    <h2>マイカレンダー</h2>
     <table class="calendar">
-        <tr>
-            <th>日</th>
-            <th>月</th>
-            <th>火</th>
-            <th>水</th>
-            <th>木</th>
-            <th>金</th>
-            <th>土</th>
-        </tr>
-        <tr>
-        <td></td><td></td>
-        <td class="day"><a href="edit.php?date=2025-01-01">1</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-02">2</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-03">3</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-04">4</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-05">5</a></td>
-    </tr>
-    <tr>
-        <td class="day"><a href="edit.php?date=2025-01-06">6</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-07">7</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-08">8</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-09">9</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-10">10</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-11">11</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-12">12</a></td>
-    </tr>
-    <tr>
-        <td class="day"><a href="edit.php?date=2025-01-13">13</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-14">14</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-15">15</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-16">16</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-17">17</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-18">18</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-19">19</a></td>
-    </tr>
-    <tr>
-        <td class="day"><a href="edit.php?date=2025-01-20">20</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-21">21</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-22">22</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-23">23</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-24">24</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-25">25</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-26">26</a></td>
-    </tr>
-    <tr>
-        <td class="day"><a href="edit.php?date=2025-01-27">27</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-28">28</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-29">29</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-30">30</a></td>
-        <td class="day"><a href="edit.php?date=2025-01-31">31</a></td>
-        <td></td><td></td>
-    </tr>
+        <thead>
+            <tr>
+                <th style="color:red;">日</th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th style="color:blue;">土</th>
+            </tr>
+        </thead>
+        <tbody id="calendarBody">
+            </tbody>
     </table>
-    <p></p>
-    <p></p>
-    <div class="date"><?= date("Y年m月d日") ?></div>
 
-    <div class="db-status">
-        <hr>
-        <p><strong></strong> <?= $db_message ?></p>
+    <div style="text-align: center; margin-top: 20px;">
+        今日は <span id="todayDisplay"></span> です
     </div>
 </main>
 
 <footer>
     <div class="footer-buttons">
-        <a href="new_diary.php" class="button">個人ページへ</a>
-        <a href="new_diary.php" class="button">編集</a>
+        <a href="profile.html" class="button">個人ページへ</a>
+        <a href="edit.html" class="button">編集</a>
     </div>
-
     <div class="footer-copy">
-        &copy; <?= date("Y") ?> 一言×色日記 All rights reserved.
+        &copy; 2025 一言×色日記 All rights reserved.
     </div>
 </footer>
+
+<script>
+    // ===============================================
+    // ▼ 仮の日記データ（本来はDBから取得するもの）
+    // ===============================================
+    const dummyData = {
+        "2025-11-01": "赤",
+        "2025-11-03": "青",
+        "2025-11-05": "黄色",
+        "2025-11-12": "緑",
+        "2025-11-20": "ピンク",
+        "2025-12-25": "赤" // 12月のデータもテスト用に追加
+    };
+
+    // 色名に対応するカラーコード
+    const colorMap = {
+        '赤': '#ffb3b3', '青': '#b3d9ff', '黄色': '#ffffb3', 
+        '緑': '#c2f0c2', 'オレンジ': '#ffd9b3', '紫': '#e6b3ff', 
+        'ピンク': '#ffcce6', '茶色': '#e6ccb3', '灰色': '#e0e0e0', 
+        '黒': '#b3b3b3', '白': '#ffffff'
+    };
+
+    // ===============================================
+    // ▼ カレンダー生成ロジック
+    // ===============================================
+    let currentYear = new Date().getFullYear();
+    let currentMonth = new Date().getMonth() + 1; // 1-12
+
+    const calendarBody = document.getElementById("calendarBody");
+    const monthLabel = document.getElementById("currentMonthLabel");
+    const todayDisplay = document.getElementById("todayDisplay");
+
+    function renderCalendar(year, month) {
+        monthLabel.textContent = `${year}年 ${month}月`;
+        calendarBody.innerHTML = ""; // クリア
+
+        const firstDay = new Date(year, month - 1, 1);
+        const lastDay = new Date(year, month, 0); // 月末日
+        const daysInMonth = lastDay.getDate();
+        const startDayOfWeek = firstDay.getDay(); // 0(日)~6(土)
+
+        let html = "<tr>";
+        let weekDay = 0;
+
+        // 1. 月初の空白
+        for (let i = 0; i < startDayOfWeek; i++) {
+            html += "<td></td>";
+            weekDay++;
+        }
+
+        // 2. 日付生成
+        for (let day = 1; day <= daysInMonth; day++) {
+            // YYYY-MM-DD形式を作成
+            const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            
+            // 色判定
+            let bgColor = "white";
+            if (dummyData[dateStr] && colorMap[dummyData[dateStr]]) {
+                bgColor = colorMap[dummyData[dateStr]];
+            }
+
+            // HTML生成
+            html += `<td style="background-color: ${bgColor};">`;
+            html += `<a href="edit.html?date=${dateStr}">${day}</a>`;
+            html += `</td>`;
+
+            // 土曜日で改行
+            if (++weekDay % 7 === 0) {
+                html += "</tr><tr>";
+            }
+        }
+
+        // 3. 月末の空白
+        while (weekDay % 7 !== 0) {
+            html += "<td></td>";
+            weekDay++;
+        }
+        
+        html += "</tr>";
+        calendarBody.innerHTML = html;
+    }
+
+    // 今日の日付表示
+    const today = new Date();
+    todayDisplay.textContent = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
+
+    // 初期表示
+    renderCalendar(currentYear, currentMonth);
+
+    // ボタン操作
+    document.getElementById("prevBtn").addEventListener("click", () => {
+        currentMonth--;
+        if (currentMonth < 1) { currentMonth = 12; currentYear--; }
+        renderCalendar(currentYear, currentMonth);
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", () => {
+        currentMonth++;
+        if (currentMonth > 12) { currentMonth = 1; currentYear++; }
+        renderCalendar(currentYear, currentMonth);
+    });
+</script>
 
 </body>
 </html>
