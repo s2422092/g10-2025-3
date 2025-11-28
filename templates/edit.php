@@ -18,7 +18,7 @@ try {
 // ログインチェック
 if (!isset($_SESSION['user_id'])) {
     // ログインしていなければログイン画面へ強制移動
-    header("Location: login.html");
+    header("Location: login.php");
     exit();
 }
 
