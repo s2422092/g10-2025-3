@@ -1,3 +1,52 @@
+<?php
+// ------------------------------
+// DB接続情報（.env を使わず直書き）
+// ------------------------------
+$host = 'localhost';
+$dbname = 'mi11yu17';
+$user = 'mi11yu17';
+$password = '5SQuEDtU';
+// ------------------------------
+// DB接続
+// ------------------------------
+try {
+    $pdo = new PDO("pgsql:host=$host;dbname=$dbname", $user, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("DB接続エラー: " . $e->getMessage());
+}
+// ------------------------------
+// POST送信時の処理
+// ------------------------------
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = trim($_POST['username']);
+    $password = $_POST['password'];
+    
+    try {
+        // ユーザー検索
+        $sql = "SELECT * FROM users WHERE username = :username";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(':username', $username);
+        $stmt->execute();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($user && password_verify($password, $user['password'])) {
+            // ログイン成功
+            session_start();
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            
+            // リダイレクト
+            header("Location: index.php");
+            exit;
+        } else {
+            $error = "ユーザー名またはパスワードが正しくありません。";
+        }
+    } catch (PDOException $e) {
+        $error = "ログインエラー: " . $e->getMessage();
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -30,30 +79,26 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             width: 320px;
         }
-        </style>
+    </style>
 </head>
 
 <body>
     <h1>ログイン画面</h1>
-    <form>
+    <?php if (!empty($error)): ?>
+        <p style="color:red;"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></p>
+    <?php endif; ?>
+    <form method="POST">
         <label>ユーザー名：
             <input type="text" name="username" required>
         </label>
-        <br>
+        <br><br>
         <label>パスワード：
             <input type="password" name="password" required>
         </label>
-</br>
-
+        <br><br>
         <button type="submit">ログイン</button>
     </form>
-<?php
-// 単純なリンク
-echo '<a href="index.php">トップページへ</a>';
-?>
-<?php
-// 単純なリンク
-echo '<a href="signup.php">新規登録ページへ</a>';
-?>
+    <p><a href="index.php">トップページへ</a></p>
+    <p><a href="signup.php">新規登録ページへ</a></p>
 </body>
 </html>
