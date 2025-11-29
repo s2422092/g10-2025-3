@@ -1,11 +1,13 @@
 <?php
 session_start();
 
-// ログインチェック
+// ログインチェック（最初に実行）
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
 }
+// ログイン中のユーザーIDを取得
+$user_id = $_SESSION['user_id'];
 
 // データベース接続
 $host = 'localhost';
@@ -20,11 +22,11 @@ try {
     die('データベース接続エラー: ' . $e->getMessage());
 }
 
-// POSTデータを取得
+// POSTデータを取得（保存処理）
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $diary_date = $_POST['diary_date'] ?? '';
     $diary_content = $_POST['diary_content'] ?? '';
-    $selected_emotion_id = $_POST['diary_color_id'] ?? null; // フォームから感情IDを取得
+    $selected_emotion_id = $_POST['diary_color_id'] ?? null;
     $user_id = $_SESSION['user_id'];
     
     // バリデーション
@@ -49,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die('色情報の取得エラー: ' . $e->getMessage());
     }
     
-    // time_slotを設定（日付のみなので全日とする）
+    // time_slotを設定
     $time_slot = '全日';
     
     // データベースに挿入
@@ -61,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([
             ':content' => $diary_content,
             ':user_id' => $user_id,
-            ':color_id' => $color_id, // color_emotions_flatから取得したcolor_id
+            ':color_id' => $color_id,
             ':time_slot' => $time_slot,
             ':created_at' => $diary_date . ' 00:00:00'
         ]);
@@ -73,50 +75,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } catch (PDOException $e) {
         die('保存エラー: ' . $e->getMessage());
     }
-} else {
-    // GETリクエストの場合はフォームを表示
-    ?>
-    <!DOCTYPE html>
-    <html lang="ja">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>日記の内容を記載</title>
-        <style>
-            select[name="diary_color_id"] {
-                font-size: 16px;
-                padding: 5px;
-            }
-            option {
-                padding: 5px;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>日記の内容を記載</h1>
-        <form action="diary_save.php" method="POST">
-            <p>日付選択: <input type="date" id="diary-date" name="diary_date" required></p>
-            <p>内容の記載:</p>
-            <textarea id="diary-content" rows="10" cols="100" name="diary_content" required></textarea>
-            <br>色の選択:</br>
-            <select name="diary_color_id" required>
-                <option value="">選択してください</option>
-                <option value="1">🟥 怒り</option>
-                <option value="2">🟦 悲しみ</option>
-                <option value="3">🟨 喜び</option>
-                <option value="4">🟧 楽しい</option>
-                <option value="5">🟩 安らぎ</option>
-                <option value="6">🟪 愛</option>
-                <option value="7">⬜ 不安</option>
-                <option value="8">🟪 寂しさ</option>
-                <option value="9">🟨 自信</option>
-            </select>
-            <a href="color.php"><p>色の見本はこちら</p></a>
-            <br>
-            <button type="submit">保存</button>
-        </form>
-    </body>
-    </html>
-    <?php
 }
+
+// GETリクエストの場合はフォームを表示（ログイン済みのみここに到達）
 ?>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日記の内容を記載</title>
+    <style>
+        select[name="diary_color_id"] {
+            font-size: 16px;
+            padding: 5px;
+        }
+        option {
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>日記の内容を記載</h1>
+    <a href="home.php"><p>ホームに戻る</p></a>
+    <form action="diary.php" method="POST">
+        <p>日付選択: <input type="date" id="diary-date" name="diary_date" required></p>
+        <p>内容の記載:</p>
+        <textarea id="diary-content" rows="10" cols="100" name="diary_content" required></textarea>
+        <br>色の選択:</br>
+        <select name="diary_color_id" required>
+            <option value="">選択してください</option>
+            <option value="1">🟥 怒り</option>
+            <option value="2">🟦 悲しみ</option>
+            <option value="3">🟨 喜び</option>
+            <option value="4">🟧 楽しい</option>
+            <option value="5">🟩 安らぎ</option>
+            <option value="6">🟪 愛</option>
+            <option value="7">⬜ 不安</option>
+            <option value="8">🟪 寂しさ</option>
+            <option value="9">🟨 自信</option>
+        </select>
+        <a href="color.php"><p>色の見本はこちら</p></a>
+        <br>
+        <button type="submit">保存</button>
+    </form>
+</body>
+</html>
