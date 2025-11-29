@@ -25,7 +25,7 @@
         <option value="8">:紫の四角特大:紫</option>
         <option value="9">:黄色い四角特大:金</option>
     </select>
-    <a href="color.html"><p>色の見本はこちら</p></a>
+    <a href="color.php"><p>色の見本はこちら</p></a>
     <br>
     <button type="submit">保存</button>
 </form>
