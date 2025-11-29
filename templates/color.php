@@ -1,3 +1,16 @@
+<?php
+session_start();
+
+// ログインチェック
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
+// ログイン中のユーザーIDを取得
+$user_id = $_SESSION['user_id'];
+
+?>
 <!DOCTYPE html>
 <html lang="ja">
 <head>

@@ -9,11 +9,17 @@ $dbname = 'mi11yu17';
 $user = 'mi11yu17';
 $password = '5SQuEDtU';
 
+// デフォルト値（DBが使えない場合用）
+$username = 'ゲストユーザー';
+$email = '未設定';
+$db_error = false;
+
 try {
     $pdo = new PDO("pgsql:host=$host;dbname=$dbname", $user, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    die("DB接続エラー: " . $e->getMessage());
+    $db_error = true;
+    $error_message = "DB接続エラー: データベースに接続できません";
 }
 
 // =========================================================
@@ -29,15 +35,35 @@ if (!isset($_SESSION['user_id'])) {
 // ログイン中のユーザーIDを取得
 $user_id = $_SESSION['user_id'];
 
-// ユーザー名とメールアドレスだけを取得
-$sql = "SELECT username, email FROM users WHERE id = :id";
-$stmt = $pdo->prepare($sql);
-$stmt->execute([':id' => $user_id]);
-$userData = $stmt->fetch(PDO::FETCH_ASSOC);
+// データベースが使える場合のみユーザー情報を取得
+if (!$db_error) {
+    try {
+        // ユーザー名とメールアドレスを取得（カラム名をuser_idに修正）
+        $sql = "SELECT username, email FROM users WHERE user_id = :user_id";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([':user_id' => $user_id]);
+        $userData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// ユーザーが見つからない場合の処理
-if (!$userData) {
-    die("ユーザーが見つかりません。usersテーブルを確認してください。");
+        // ユーザーが見つかった場合
+        if ($userData) {
+            $username = $userData['username'];
+            $email = $userData['email'];
+        } else {
+            $username = 'ユーザーID: ' . $user_id;
+            $email = '情報取得不可';
+        }
+    } catch (PDOException $e) {
+        // テーブルが存在しない場合などのエラー
+        if (strpos($e->getMessage(), 'does not exist') !== false) {
+            $db_error = true;
+            $error_message = "usersテーブルがまだ作成されていません";
+            $username = 'ユーザーID: ' . $user_id;
+            $email = '（データベース準備中）';
+        } else {
+            $db_error = true;
+            $error_message = "データ取得エラー: " . $e->getMessage();
+        }
+    }
 }
 ?>
 
@@ -46,7 +72,7 @@ if (!$userData) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>マイページ</title>
+    <title>マイページ - 個人ページ</title>
     <style>
         body { font-family: "Hiragino Sans", sans-serif; background: #f9fafb; margin: 0; padding: 0; }
         header { background: #f9fafb; padding: 20px; text-align: center; }
@@ -65,7 +91,7 @@ if (!$userData) {
         
         .profile-icon { font-size: 4em; margin-bottom: 20px; display: block; }
         
-        /* 情報表示のデザイン（左寄せ） */
+        /* 情報表示のデザイン */
         .info-group { margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; text-align: left; }
         .label { font-size: 0.9em; color: #777; display: block; margin-bottom: 8px; font-weight: bold; }
         .value { font-size: 1.2em; color: #333; font-weight: bold; }
@@ -93,6 +119,17 @@ if (!$userData) {
         .button.logout:hover { background: #dc2626; }
         
         footer { margin-top: 40px; color: #777; font-size: 0.9em; text-align: center; }
+        
+        /* エラーメッセージ */
+        .warning-message { 
+            background: #fff3cd; 
+            border: 1px solid #ffc107; 
+            color: #856404;
+            padding: 15px; 
+            border-radius: 8px; 
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
@@ -102,27 +139,34 @@ if (!$userData) {
 </header>
 
 <main>
+    <?php if ($db_error): ?>
+    <div class="warning-message">
+        <strong>お知らせ:</strong> <?php echo htmlspecialchars($error_message); ?><br>
+        一部の情報が表示できない可能性があります。
+    </div>
+    <?php endif; ?>
+    
     <div class="profile-icon">👤</div>
     
     <div class="info-group">
         <span class="label">ユーザー名</span>
-        <span class="value"><?= htmlspecialchars($userData['username']) ?></span>
+        <span class="value"><?php echo htmlspecialchars($username); ?></span>
     </div>
 
     <div class="info-group">
         <span class="label">メールアドレス</span>
-        <span class="value"><?= htmlspecialchars($userData['email']) ?></span>
+        <span class="value"><?php echo htmlspecialchars($email); ?></span>
     </div>
 
     <div class="btn-container">
-        <a href="personal.php" class="button outline">📅 カレンダーへ戻る</a>
+        <a href="personal.php" class="button outline">📅 ホームへ戻る</a>
         
-        <a href="login.html" class="button logout">ログアウト</a>
+        <a href="logout.php" class="button logout">ログアウト</a>
     </div>
 </main>
 
 <footer>
-    &copy; <?= date("Y") ?> 一言×色日記 All rights reserved.
+    &copy; 2025 一言×色日記 All rights reserved.
 </footer>
 
 </body>

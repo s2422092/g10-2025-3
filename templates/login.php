@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['username'] = $user['username'];
             
             // リダイレクト
-            header("Location: index.php");
+            header("Location: home.php");
             exit;
         } else {
             $error = "ユーザー名またはパスワードが正しくありません。";
