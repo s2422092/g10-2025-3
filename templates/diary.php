@@ -219,8 +219,10 @@ select option {
     </form>
 
     <div class="link">
-        <a href="home.php">ホームに戻る</a>
+        <a href="home.php">ホームに戻る</a> | 
+        <a href="color.php">色と感情を見る</a>
     </div>
+
 </div>
 
 <script>
