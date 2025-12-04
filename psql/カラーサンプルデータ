@@ -1,10 +1,10 @@
-INSERT INTO public.color_emotions_flat (color_id, color_name, emotion_id, feeling_text) VALUES
-(1, '赤', 1, '怒り'),
-(2, '青', 2, '悲しみ'),
-(3, '黄', 3, '喜び'),
-(4, 'オレンジ', 4, '楽しい'),
-(5, '緑', 5, '安らぎ'),
-(6, '紫', 6, '愛'),
-(7, '白', 7, '不安'),
-(8, '茶色', 8, '寂しさ'),
-(9, '黄', 9, '自信');
+INSERT INTO public.color_emotions_flat (color_id, color_name, color_code, emotion_id, feeling_text) VALUES
+(1, '赤', '#FF0000', 1, '怒り'),
+(2, '青', '#0000FF', 2, '悲しみ'),
+(3, '黄', '#FFFF00', 3, '喜び'),
+(4, 'オレンジ', '#FFA500', 4, '楽しい'),
+(5, '緑', '#00FF00', 5, '安らぎ'),
+(6, '紫', '#800080', 6, '愛'),
+(7, '白', '#FFFFFF', 7, '不安'),
+(8, '紫', '#800080', 8, '寂しさ'),
+(9, '黄', '#FFFF00', 9, '自信');
