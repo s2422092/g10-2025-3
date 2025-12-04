@@ -5,19 +5,23 @@
 // ------------------------------
 // DB接続情報（.env を使わず直書き）
 // ------------------------------
-$host = 'localhost';
-$dbname = 'mi11yu17';
-$user = 'mi11yu17';
-$password = '5SQuEDtU';
-// ------------------------------
-// DB接続
-// ------------------------------
+$host = 'dpg-d4g18ebe5dus739hcjrg-a.singapore-postgres.render.com';
+$port = 5432;
+$dbname = 'g1020253';
+$user = 'g1020253';
+$password = 'C1d8rp3nKUp4Ajdh8NyHUTopXpooYIvA';
+
+$dsn = "pgsql:host=$host;port=$port;dbname=$dbname";
+
 try {
-    $pdo = new PDO("pgsql:host=$host;dbname=$dbname", $user, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo = new PDO($dsn, $user, $password, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+    ]);
+    echo "Connected to Render PostgreSQL!";
 } catch (PDOException $e) {
-    die("DB接続エラー: " . $e->getMessage());
+    echo "Connection failed: " . $e->getMessage();
 }
+
 // ------------------------------
 // POST送信時の処理
 // ------------------------------

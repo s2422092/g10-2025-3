@@ -14,3 +14,4 @@ cd /Users/yugo_suzuki/zemi/g10-2025-3
 
 php -S localhost:8000 -t templates
 
+データベースへの入り方

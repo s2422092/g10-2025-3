@@ -13,10 +13,23 @@ $current_user_id = $_SESSION['user_id'];
 // ---------------------------------------------------------
 // 1. DB接続設定
 // ---------------------------------------------------------
-$host = 'localhost';
-$dbname = 'mi11yu17';
-$user = 'mi11yu17';
-$password = '5SQuEDtU';
+$host = 'dpg-d4g18ebe5dus739hcjrg-a.singapore-postgres.render.com';
+$port = 5432;
+$dbname = 'g1020253';
+$user = 'g1020253';
+$password = 'C1d8rp3nKUp4Ajdh8NyHUTopXpooYIvA';
+
+$dsn = "pgsql:host=$host;port=$port;dbname=$dbname";
+
+try {
+    $pdo = new PDO($dsn, $user, $password, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+    ]);
+    echo "Connected to Render PostgreSQL!";
+} catch (PDOException $e) {
+    echo "Connection failed: " . $e->getMessage();
+}
+
 
 $has_recorded = false;
 $status_message = "今日の記録は\nまだです";
