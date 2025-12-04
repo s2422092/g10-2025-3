@@ -124,42 +124,150 @@ $target_date = isset($_GET['date']) ? $_GET['date'] : date('Y-m-d');
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <?php endif; ?>
     <style>
-        body { font-family: sans-serif; background: #FDFDFD; padding: 20px; color: #333; }
-        .container { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; max-width: 1000px; margin: 0 auto; }
-        .header { text-align: center; border: 2px solid #333; padding: 15px; margin-bottom: 30px; border-radius: 10px; background: #fff; max-width: 400px; margin-left: auto; margin-right: auto; }
-        .left-col, .right-col { flex: 1; min-width: 300px; text-align: center; }
-        .btn { display: block; width: 80%; margin: 10px auto; padding: 15px; border: 2px solid #333; background: #fff; color: #333; text-decoration: none; font-weight: bold; border-radius: 8px; box-shadow: 3px 3px 0 #333; }
-        .btn:hover { background: #F0F0F0; transform: translate(1px, 1px); box-shadow: 2px 2px 0 #333; }
-        .status-message { font-size: 1.5em; white-space: pre-wrap; margin: 20px 0; }
-        .chart-container { position: relative; height: 350px; width: 100%; max-width: 450px; margin: 20px auto; }
-        input[type="date"] { padding: 8px; font-size: 1.1em; border: 2px solid #333; border-radius: 5px; }
-        .no-data-message { font-size: 1.2em; color: #666; margin: 40px 0; padding: 20px; background: #f9f9f9; border-radius: 8px; }
-        .warning-message { font-size: 1em; color: #d9534f; margin: 20px 0; padding: 15px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Hiragino Sans", "Helvetica Neue", sans-serif;
+            background: linear-gradient(135deg, #8fbaff, #ffd7e7);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            color: #333;
+        }
+
+        .header {
+            margin: 30px 0 20px;
+            font-size: 2em;
+            color: #4a6fa5;
+            font-weight: bold;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            max-width: 1000px;
+            width: 90%;
+            margin-bottom: 50px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+            border-radius: 18px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            padding: 35px 25px;
+            flex: 1;
+            min-width: 300px;
+            animation: floatUp 1.4s ease;
+        }
+
+        @keyframes floatUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .status-message {
+            font-size: 1.4em;
+            white-space: pre-wrap;
+            margin: 20px 0;
+        }
+
+        .btn {
+            display: block;
+            width: 80%;
+            margin: 12px auto;
+            padding: 14px 0;
+            border: none;
+            border-radius: 12px;
+            background: #4d8df5;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1em;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+            transition: 0.25s ease;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: #2f6de0;
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.22);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+            max-width: 450px;
+            margin: 20px auto;
+        }
+
+        input[type="date"] {
+            padding: 10px 12px;
+            font-size: 1.1em;
+            border-radius: 10px;
+            border: 2px solid #4d8df5;
+            outline: none;
+            margin-top: 10px;
+        }
+
+        input[type="date"]:focus {
+            box-shadow: 0 0 6px rgba(77,141,245,0.3);
+        }
+
+        .no-data-message, .warning-message {
+            font-size: 1.1em;
+            color: #666;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.8);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+        }
+
+        .warning-message {
+            color: #d9534f;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+        }
+
     </style>
 </head>
+
 <body>
-    <div class="header"><h1>サイト名</h1></div>
-    
+    <div class="header">感情カレンダー</div>
+
     <?php if ($table_missing): ?>
-    <div class="warning-message">
-        <strong>お知らせ:</strong> データベーステーブルの作成が必要です。<br>
-        データベース管理者に「diariesテーブル」の作成を依頼してください。
-    </div>
+        <div class="warning-message">
+            <strong>お知らせ:</strong> データベーステーブルの作成が必要です。<br>
+            データベース管理者に「diariesテーブル」の作成を依頼してください。
+        </div>
     <?php endif; ?>
-    
+
     <div class="container">
-        <div class="left-col">
-            <h2 style="margin-top:0;"><?php echo date('Y年n月j日'); ?></h2>
+        <div class="card">
+            <h2><?php echo date('Y年n月j日'); ?></h2>
             <div class="status-message"><?php echo $status_message; ?></div>
             <a href="diary.php" class="btn">記録する</a>
             <a href="profile.php" class="btn">マイページ</a>
         </div>
-        <div class="right-col">
+
+        <div class="card">
             <h2>みんなの感情</h2>
             <form action="" method="GET">
                 <input type="date" name="date" value="<?php echo htmlspecialchars($target_date); ?>" onchange="this.form.submit()">
             </form>
-            
+
             <?php if ($table_missing): ?>
                 <div class="no-data-message">
                     データベースの準備が完了すると<br>ここにグラフが表示されます
@@ -175,14 +283,14 @@ $target_date = isset($_GET['date']) ? $_GET['date'] : date('Y-m-d');
             <?php endif; ?>
         </div>
     </div>
-    
+
     <?php if ($has_diary_data): ?>
     <script>
         const labels = <?php echo json_encode($labels); ?>;
         const dataCounts = <?php echo json_encode($data_counts); ?>;
         const bgColors = <?php echo json_encode($bg_colors); ?>;
         const ctx = document.getElementById('emotionChart').getContext('2d');
-        const emotionChart = new Chart(ctx, {
+        new Chart(ctx, {
             type: 'pie',
             data: {
                 labels: labels,
@@ -199,14 +307,7 @@ $target_date = isset($_GET['date']) ? $_GET['date'] : date('Y-m-d');
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: {
-                            font: { size: 12 },
-                            padding: 15,
-                            usePointStyle: true,
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {}
+                        labels: { font: { size: 12 }, padding: 15, usePointStyle: true }
                     }
                 }
             }
