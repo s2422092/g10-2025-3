@@ -82,82 +82,95 @@ try {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>日記の作成</title>
 <style>
+/* 背景・フォント */
 body {
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    background-color: #f5f5f5;
+    font-family: "Hiragino Sans","Helvetica Neue",sans-serif;
     margin: 0;
     padding: 0;
-    color: #333;
+    background: linear-gradient(135deg, #e0f7fa, #ffe0b2);
+    min-height: 100vh;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     align-items: center;
+    transition: background 0.5s ease;
 }
-.header {
-    text-align: center;
-    margin: 20px 0;
-    padding: 15px 30px;
-    border-radius: 10px;
-    background-color: #fff;
-    border: 2px solid #333;
-    box-shadow: 3px 3px 0 #333;
-}
-form {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 3px 3px 0 #333;
-    max-width: 600px;
+
+/* カード風フォーム */
+.card {
+    background: rgba(255,255,255,0.95);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    padding: 40px 30px;
+    max-width: 500px;
     width: 90%;
+    text-align: center;
 }
-h1 {
+
+.card h1 {
+    margin-bottom: 25px;
     color: #4a6fa5;
-    margin-bottom: 20px;
-    text-align: center;
+    font-size: 2em;
 }
-label, select, textarea, input {
+
+label {
     display: block;
-    width: 100%;
-    margin-bottom: 15px;
-    font-size: 1.1em;
-}
-textarea {
-    resize: vertical;
-}
-select, input[type="date"] {
-    padding: 8px;
-    border-radius: 5px;
-    border: 2px solid #333;
-}
-button {
-    display: block;
-    width: 100%;
-    padding: 15px;
-    border: 2px solid #333;
-    border-radius: 8px;
-    background: #fff;
-    color: #333;
+    text-align: left;
+    margin-bottom: 5px;
     font-weight: bold;
+    color: #333;
+}
+
+input[type="date"],
+textarea,
+select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 2px solid #4a6fa5;
+    margin-bottom: 20px;
+    font-size: 1em;
+    outline: none;
+}
+
+textarea { resize: vertical; min-height: 120px; }
+
+button {
+    width: 100%;
+    padding: 14px 0;
+    border: none;
+    border-radius: 12px;
+    background: #4a6fa5;
+    color: #fff;
+    font-weight: bold;
+    font-size: 1.1em;
     cursor: pointer;
-    box-shadow: 3px 3px 0 #333;
-    transition: all 0.1s ease-in-out;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    transition: 0.2s;
 }
+
 button:hover {
-    background: #f0f0f0;
-    transform: translate(1px, 1px);
-    box-shadow: 2px 2px 0 #333;
+    background: #3b5c90;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
 }
+
 .error {
-    color: red;
+    color: #d9534f;
     margin-bottom: 15px;
-    text-align: center;
+}
+
+/* 色選択を少し見やすく */
+select option {
+    padding: 5px;
 }
 .link {
-    margin-top: 15px;
+    margin-top: 20px;
     text-align: center;
 }
 .link a {
-    color: #4a6fa5;
     text-decoration: none;
+    color: #4a6fa5;
+    font-weight: bold;
 }
 .link a:hover {
     text-decoration: underline;
@@ -165,41 +178,66 @@ button:hover {
 </style>
 </head>
 <body>
-<div class="header"><h1>日記を記録</h1></div>
+<div class="card">
+    <h1>日記を記録</h1>
 
-<?php if (!empty($error)): ?>
-    <div class="error"><?= htmlspecialchars($error) ?></div>
-<?php endif; ?>
+    <?php if (!empty($error)): ?>
+        <div class="error"><?= htmlspecialchars($error) ?></div>
+    <?php endif; ?>
 
-<form method="POST">
-    <label for="diary-date">日付選択:</label>
-    <input type="date" id="diary-date" name="diary_date" required>
+    <form method="POST">
+        <label for="diary-date">日付選択:</label>
+        <input type="date" id="diary-date" name="diary_date" required>
 
-    <label for="diary-content">内容の記載:</label>
-    <textarea id="diary-content" name="diary_content" rows="8" required></textarea>
+        <label for="diary-content">内容の記載:</label>
+        <textarea id="diary-content" name="diary_content" rows="8" required></textarea>
 
-    <label for="diary_color_id">色と感情を選択:</label>
-    <select name="diary_color_id" id="diary_color_id" required>
-        <option value="">選択してください</option>
-        <?php foreach ($color_emotions as $ce): 
-            $bg = htmlspecialchars($ce['color_code']);
-            $r = hexdec(substr($bg,1,2));
-            $g = hexdec(substr($bg,3,2));
-            $b = hexdec(substr($bg,5,2));
-            $brightness = ($r*299 + $g*587 + $b*114)/1000;
-            $text_color = ($brightness > 186) ? '#000000' : '#FFFFFF';
-        ?>
-            <option value="<?= htmlspecialchars($ce['emotion_id']) ?>" style="background-color: <?= $bg ?>; color: <?= $text_color ?>;">
-                <?= htmlspecialchars($ce['color_name'] . ' - ' . $ce['feeling_text']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select>
+        <label for="diary_color_id">色と感情を選択:</label>
+        <select name="diary_color_id" id="diary_color_id" required>
+            <option value="">選択してください</option>
+            <?php
+            foreach ($color_emotions as $ce) {
+                $id = htmlspecialchars($ce['emotion_id']);
+                $feeling = htmlspecialchars($ce['feeling_text']);
+                $color_code = htmlspecialchars($ce['color_code']);
+                $emoji = '⬛';
+                switch ($ce['color_name']) {
+                    case '赤': $emoji = '🟥'; break;
+                    case '青': $emoji = '🟦'; break;
+                    case '黄': $emoji = '🟨'; break;
+                    case 'オレンジ': $emoji = '🟧'; break;
+                    case '緑': $emoji = '🟩'; break;
+                    case '紫': $emoji = '🟪'; break;
+                    case '白': $emoji = '⬜'; break;
+                }
+                echo "<option value=\"$id\" data-color=\"$color_code\">$emoji $feeling</option>";
+            }
+            ?>
+        </select>
 
-    <button type="submit">保存</button>
-</form>
+        <button type="submit">保存</button>
+    </form>
 
-<div class="link">
-    <a href="home.php">ホームに戻る</a>
+    <div class="link">
+        <a href="home.php">ホームに戻る</a>
+    </div>
 </div>
+
+<script>
+// 選択した色に応じて背景色を変更
+const select = document.getElementById('diary_color_id');
+const body = document.body;
+
+select.addEventListener('change', () => {
+    const selectedOption = select.options[select.selectedIndex];
+    const color = selectedOption.getAttribute('data-color');
+    if (color) {
+        body.style.background = color + '33'; // 少し透明感をつける
+    } else {
+        body.style.background = 'linear-gradient(135deg, #e0f7fa, #ffe0b2)';
+    }
+});
+</script>
+
 </body>
 </html>
