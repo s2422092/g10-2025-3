@@ -1,285 +1,276 @@
 <?php
-// =========================================================
-// 1. データベース接続
-// =========================================================
-$host = 'localhost';
-$dbname = 'mi11yu17'; // あなたのDB名
-$user = 'mi11yu17';   // あなたのユーザー名
-$password = '5SQuEDtU'; // あなたのパスワード
+session_start();
 
-try {
-    $pdo = new PDO("pgsql:host=$host;dbname=$dbname", $user, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("DB接続エラー: " . $e->getMessage());
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
 }
 
-// =========================================================
-// 2. カレンダーの日付計算ロジック
-// =========================================================
-// タイムゾーン設定
+// データベース接続
+$host = 'dpg-d4g18ebe5dus739hcjrg-a.singapore-postgres.render.com';
+$port = 5432;
+$dbname = 'g1020253';
+$user = 'g1020253';
+$password = 'C1d8rp3nKUp4Ajdh8NyHUTopXpooYIvA';
+
+$dsn = "pgsql:host=$host;port=$port;dbname=$dbname";
+$diaryColors = [];
+$diaryData = [];
+
+try {
+    $pdo = new PDO($dsn, $user, $password, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+    ]);
+    $db_available = true;
+} catch (PDOException $e) {
+    $db_available = false;
+}
+
 date_default_timezone_set('Asia/Tokyo');
 
-// URLパラメータから年・月を取得（なければ現在の年月）
 $year = isset($_GET['year']) ? (int)$_GET['year'] : date("Y");
 $month = isset($_GET['month']) ? (int)$_GET['month'] : date("m");
 
-// 月初・月末・曜日を計算
 $firstDayStr = sprintf("%04d-%02d-01", $year, $month);
 $firstDayTime = strtotime($firstDayStr);
-$daysInMonth = date("t", $firstDayTime); // その月の日数
-$startWeekDay = date("w", $firstDayTime); // 1日の曜日 (0:日, 1:月...)
+$daysInMonth = date("t", $firstDayTime);
+$startWeekDay = date("w", $firstDayTime);
 
-// 前月・次月のリンク用
-$prevMonth = date("m", mktime(0, 0, 0, $month - 1, 1, $year));
-$prevYear = date("Y", mktime(0, 0, 0, $month - 1, 1, $year));
-$nextMonth = date("m", mktime(0, 0, 0, $month + 1, 1, $year));
-$nextYear = date("Y", mktime(0, 0, 0, $month + 1, 1, $year));
+$prevMonth = date("m", mktime(0,0,0,$month-1,1,$year));
+$prevYear = date("Y", mktime(0,0,0,$month-1,1,$year));
+$nextMonth = date("m", mktime(0,0,0,$month+1,1,$year));
+$nextYear = date("Y", mktime(0,0,0,$month+1,1,$year));
 
-// =========================================================
-// 3. データベースから「色」を取得
-// =========================================================
-// 指定した月の日記データを取得し、日付と色名を紐づける
-$sql = "
-    SELECT d.diary_date, c.color_name 
-    FROM diaries d
-    LEFT JOIN color_emotions_flat c ON d.color_id = c.color_id
-    WHERE d.diary_date BETWEEN :start AND :end
-";
-
-$stmt = $pdo->prepare($sql);
-$stmt->execute([
-    ':start' => "$year-$month-01",
-    ':end'   => "$year-$month-$daysInMonth"
-]);
-
-// データを配列に整理: ['2025-01-01' => '赤', '2025-01-02' => '青' ...]
-$diaryColors = [];
-foreach ($stmt as $row) {
-    if ($row['diary_date']) {
-        $diaryColors[$row['diary_date']] = $row['color_name'];
-    }
-}
-
-// 色名(日本語)をCSSカラーコードに変換するマップ
 $colorMap = [
-    '赤' => '#ffb3b3',       // 薄い赤
-    '青' => '#b3d9ff',       // 薄い青
-    '黄色' => '#ffffb3',     // 薄い黄色
-    '緑' => '#c2f0c2',       // 薄い緑
-    'オレンジ' => '#ffd9b3', // 薄いオレンジ
-    '紫' => '#e6b3ff',       // 薄い紫
-    'ピンク' => '#ffcce6',   // 薄いピンク
-    '茶色' => '#e6ccb3',     // 薄い茶色
-    '灰色' => '#e0e0e0',     // 薄いグレー
-    '黒' => '#b3b3b3',       // 薄い黒（文字が見えるように）
+    '赤' => '#ffb3b3',
+    '青' => '#b3d9ff',
+    '黄色' => '#ffffb3',
+    '緑' => '#c2f0c2',
+    'オレンジ' => '#ffd9b3',
+    '紫' => '#e6b3ff',
+    'ピンク' => '#ffcce6',
+    '茶色' => '#e6ccb3',
+    '灰色' => '#e0e0e0',
+    '黒' => '#b3b3b3',
     '白' => '#ffffff'
 ];
 
-$db_message = "データベース接続中: " . $dbname;
+// データベースから日記情報を取得
+if ($db_available) {
+    try {
+        $sql = "
+            SELECT DATE(d.created_at) as diary_date, c.color_name, d.content
+            FROM diaries d
+            LEFT JOIN color_emotions_flat c ON d.color_id = c.color_id
+            WHERE d.user_id = :user_id
+            AND DATE(d.created_at) BETWEEN :start AND :end
+            ORDER BY d.created_at ASC
+        ";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':user_id' => $_SESSION['user_id'],
+            ':start' => "$year-$month-01",
+            ':end'   => "$year-$month-$daysInMonth"
+        ]);
+
+        foreach ($stmt as $row) {
+            $date = $row['diary_date'];
+            if (!isset($diaryData[$date])) {
+                $diaryData[$date] = [];
+            }
+
+            // 日記内容と感情を配列で格納
+            $diaryData[$date][] = [
+                'content' => $row['content'],
+                'color' => $row['color_name'] ?? null
+            ];
+
+            if ($row['color_name']) {
+                $diaryColors[$date] = $row['color_name'];
+            }
+        }
+    } catch (PDOException $e) {
+        $diaryData = [];
+        $diaryColors = [];
+    }
+}
+
+// JavaScriptで使える形に変換
+$jsDiaryData = json_encode($diaryData);
 ?>
 
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>個人ページ</title>
-    <style>
-        body {
-            font-family: "Hiragino Sans", "Helvetica Neue", sans-serif;
-            background-color: #f9fafb;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #f9fafb;
-            color: #333;
-            padding: 20px;
-            text-align: center;
-        }
-        main {
-            max-width: 700px;
-            margin: 40px auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            padding: 30px;
-        }
-        h1 {
-            margin-top: 0;
-            font-size: 2em;
-            color: #333;
-        }
-        /* 月移動のリンクスタイル */
-        .month-nav {
-            margin-bottom: 10px;
-            font-size: 1.2rem;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-        .month-nav a {
-            text-decoration: none;
-            color: #3b82f6;
-            font-weight: bold;
-        }
-        .calendar {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 20px;
-        }
-        .calendar th, .calendar td {
-            border: 1px solid #ddd;
-            width: 14.2%;
-            height: 60px; /* マスの高さを少し広げました */
-            text-align: center;
-        }
-        .calendar th {
-            background-color: #f0f0f0;
-        }
-        /* マス全体をクリック可能にする設定 */
-        .calendar td a {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 100%;
-            text-decoration: none;
-            color: #333;
-            font-weight: bold;
-        }
-        .calendar td a:hover {
-            opacity: 0.7;
-        }
-        .date {
-            font-size: 1.1em;
-            margin: 10px 0 30px;
-            color: #666;
-            text-align: center;
-        }
-        .button {
-            display: inline-block;
-            background-color: #3b82f6;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: 0.3s;
-        }
-        .button:hover {
-            background-color: #2563eb;
-        }
-        footer {
-            text-align: center;
-            margin-top: 50px;
-            font-size: 0.9em;
-            color: #777;
-        }
-        .footer-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .db-status {
-            text-align: center;
-            margin-top: 30px;
-            font-size: 0.8em;
-            color: #888;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>マイカレンダー</title>
+<style>
+body { font-family: "Hiragino Sans", sans-serif; background: #f9fafb; margin: 0; padding: 0; }
+header { background: #f9fafb; padding: 20px; text-align: center; }
+.container { display: flex; max-width: 1000px; margin: 20px auto; gap: 20px; }
+.calendar-container { flex: 1; background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); padding: 20px; }
+.diary-container { width: 400px; background: #fff9e6; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); padding: 20px; }
+h1 { margin: 0 0 10px 0; font-size: 1.8em; color: #333; }
+.month-nav { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 20px; font-size: 1.2em; }
+.month-nav a { background: none; border: none; color: #3b82f6; font-weight: bold; font-size: 1em; text-decoration: none; cursor: pointer; padding: 5px 10px; }
+.month-nav a:hover { text-decoration: underline; background: #eff6ff; border-radius: 4px; }
+
+.calendar { width: 100%; border-collapse: collapse; }
+.calendar th, .calendar td { border: 1px solid #ddd; width: 14.2%; height: 60px; text-align: center; position: relative; }
+.calendar th { background: #f0f0f0; height: 40px; }
+.calendar td a { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; text-decoration: none; color: #333; font-weight: bold; }
+
+.diary-mark {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+footer { text-align: center; margin-top: 40px; color: #777; font-size: 0.9em; }
+.footer-buttons { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; }
+.button { background: #3b82f6; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; }
+.button:hover { background: #2563eb; }
+
+.warning-message { 
+    background: #fff3cd; 
+    border: 1px solid #ffc107; 
+    color: #856404;
+    padding: 15px; 
+    border-radius: 8px; 
+    margin-bottom: 20px;
+    font-size: 0.9em;
+    text-align: center;
+}
+#diary-content li { margin-bottom: 6px; }
+</style>
 </head>
 <body>
 
 <header>
-    <h1>マイカレンダー</h1>
-    
-    <div class="month-nav">
-        <a href="?year=<?= $prevYear ?>&month=<?= $prevMonth ?>">＜ 前月</a>
-        <span><?= $year ?>年 <?= $month ?>月</span>
-        <a href="?year=<?= $nextYear ?>&month=<?= $nextMonth ?>">次月 ＞</a>
-    </div>
+<h1>マイカレンダー</h1>
+<div class="month-nav">
+    <a href="?year=<?php echo $prevYear; ?>&month=<?php echo $prevMonth; ?>">＜ 前月</a>
+    <span><?php echo $year; ?>年 <?php echo $month; ?>月</span>
+    <a href="?year=<?php echo $nextYear; ?>&month=<?php echo $nextMonth; ?>">次月 ＞</a>
+</div>
 </header>
 
-<main>
-    <table class="calendar">
-        <tr>
-            <th style="color:red;">日</th>
-            <th>月</th>
-            <th>火</th>
-            <th>水</th>
-            <th>木</th>
-            <th>金</th>
-            <th style="color:blue;">土</th>
-        </tr>
-        <tr>
-        <?php
-        // ---------------------------------------------
-        // カレンダー生成ループ
-        // ---------------------------------------------
-        
-        // 1. 月初めの空白セル
-        for ($i = 0; $i < $startWeekDay; $i++) {
-            echo "<td></td>";
-        }
+<div class="container">
+    <div class="calendar-container">
+        <?php if (!$db_available): ?>
+        <div class="warning-message">
+            データベースに接続できません。色の表示機能は利用できません。
+        </div>
+        <?php endif; ?>
 
-        $weekDay = $startWeekDay;
+        <table class="calendar">
+            <thead>
+                <tr>
+                    <th style="color:red;">日</th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th style="color:blue;">土</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php
+            $weekDay = 0;
+            echo "<tr>";
+            for ($i = 0; $i < $startWeekDay; $i++) { echo "<td></td>"; $weekDay++; }
 
-        // 2. 日付セルを作成
-        for ($day = 1; $day <= $daysInMonth; $day++) {
-            $dateStr = sprintf("%04d-%02d-%02d", $year, $month, $day);
-            
-            // 色の決定
-            $bgColor = '#ffffff'; // デフォルトは白
-            
-            // DBにその日の日記があれば、色を取得してセット
-            if (isset($diaryColors[$dateStr])) {
-                $colorName = $diaryColors[$dateStr]; // 例: '赤'
-                if (isset($colorMap[$colorName])) {
-                    $bgColor = $colorMap[$colorName]; // 例: '#ffb3b3'
-                }
+            for ($day = 1; $day <= $daysInMonth; $day++) {
+                $dateStr = sprintf("%04d-%02d-%02d", $year, $month, $day);
+                $bgColor = $diaryColors[$dateStr] ?? "white";
+                if (isset($colorMap[$bgColor])) $bgColor = $colorMap[$bgColor];
+
+                $hasDiary = isset($diaryData[$dateStr]);
+                echo '<td style="background-color: '.$bgColor.';">';
+                echo '<a href="#" class="diary-link" data-date="'.$dateStr.'">'.$day;
+                if ($hasDiary) echo '<span class="diary-mark" style="background-color:#333;"></span>';
+                echo '</a></td>';
+
+                if (++$weekDay % 7 === 0) echo "</tr><tr>";
             }
 
-            // HTML出力 (背景色を設定し、リンク先をedit.phpに設定)
-            echo "<td style='background-color: {$bgColor};'>";
-            echo "<a href='edit.php?date={$dateStr}'>{$day}</a>";
-            echo "</td>";
-
-            // 土曜日で改行
-            if (++$weekDay % 7 == 0) {
-                echo "</tr><tr>";
-            }
-        }
-
-        // 3. 月末の空白セル埋め（レイアウト崩れ防止）
-        while ($weekDay % 7 != 0) {
-            echo "<td></td>";
-            $weekDay++;
-        }
-        ?>
-        </tr>
-    </table>
-
-    <p></p>
-    <div class="date">今日は <?= date("Y年m月d日") ?> です</div>
-
-    <div class="db-status">
-        <hr>
-        <p><?= $db_message ?></p>
+            while ($weekDay % 7 !== 0) { echo "<td></td>"; $weekDay++; }
+            echo "</tr>";
+            ?>
+            </tbody>
+        </table>
     </div>
-</main>
+
+    <div class="diary-container" id="diary-display">
+        <h2>日記内容</h2>
+        <ul id="diary-content">
+            <li>日付をクリックすると内容が表示されます。</li>
+        </ul>
+    </div>
+</div>
 
 <footer>
-    <div class="footer-buttons">
-        <a href="personal.php" class="button">個人ページへ</a>
-        <a href="edit.php?date=<?= date('Y-m-d') ?>" class="button">編集</a>
-    </div>
-
-    <div class="footer-copy">
-        &copy; <?= date("Y") ?> 一言×色日記 All rights reserved.
-    </div>
+<div class="footer-buttons">
+    <a href="profile.php" class="button">個人ページへ</a>
+    <a href="home.php" class="button">ホームへ</a>
+</div>
+<div class="footer-copy">
+    &copy; 2025 一言×色日記 All rights reserved.
+</div>
 </footer>
+
+<script>
+const diaryData = <?php echo $jsDiaryData; ?>;
+const colorMap = {
+    '赤': '#ffb3b3',
+    '青': '#b3d9ff',
+    '黄色': '#ffffb3',
+    '緑': '#c2f0c2',
+    'オレンジ': '#ffd9b3',
+    '紫': '#e6b3ff',
+    'ピンク': '#ffcce6',
+    '茶色': '#e6ccb3',
+    '灰色': '#e0e0e0',
+    '黒': '#b3b3b3',
+    '白': '#ffffff'
+};
+
+document.querySelectorAll('.diary-link').forEach(link => {
+    link.addEventListener('click', e => {
+        e.preventDefault();
+        const date = link.dataset.date;
+        const container = document.getElementById('diary-content');
+        container.innerHTML = '';
+
+        if (diaryData[date]) {
+            diaryData[date].forEach(entry => {
+                const li = document.createElement('li');
+                li.textContent = entry.content;
+
+                if (entry.color) {
+                    const colorName = document.createElement('span');
+                    colorName.textContent = ` (${entry.color})`;
+                    colorName.style.fontWeight = 'bold';
+                    colorName.style.marginLeft = '6px';
+                    li.appendChild(colorName);
+
+                    if (colorMap[entry.color]) {
+                        li.style.backgroundColor = colorMap[entry.color];
+                        li.style.padding = '4px';
+                        li.style.borderRadius = '4px';
+                    }
+                }
+
+                container.appendChild(li);
+            });
+        } else {
+            const li = document.createElement('li');
+            li.textContent = '記録はありません';
+            container.appendChild(li);
+        }
+    });
+});
+</script>
 
 </body>
 </html>
