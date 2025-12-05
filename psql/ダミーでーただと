@@ -1,0 +1,52 @@
+-- usersテーブルのダミーデータ
+INSERT INTO public.users (username, password, email, is_public) VALUES
+('alice', 'password1', 'alice@example.com', TRUE),
+('bob', 'password2', 'bob@example.com', TRUE),
+('charlie', 'password3', 'charlie@example.com', FALSE),
+('dave', 'password4', 'dave@example.com', TRUE),
+('eve', 'password5', 'eve@example.com', FALSE),
+('frank', 'password6', 'frank@example.com', TRUE),
+('grace', 'password7', 'grace@example.com', TRUE),
+('heidi', 'password8', 'heidi@example.com', FALSE),
+('ivan', 'password9', 'ivan@example.com', TRUE),
+('judy', 'password10', 'judy@example.com', TRUE);
+
+-- color_emotions_flat テーブルのサンプルカラー
+-- このテーブルが必要なので仮に色を作成します
+CREATE TABLE IF NOT EXISTS public.color_emotions_flat (
+  id SERIAL PRIMARY KEY,
+  color_name VARCHAR(50) NOT NULL
+);
+
+INSERT INTO public.color_emotions_flat (color_name) VALUES
+('赤'), ('青'), ('黄色'), ('緑'), ('オレンジ'), ('紫'), ('ピンク'), ('茶色'), ('灰色'), ('黒'), ('白');
+
+-- diariesテーブルのダミーデータ
+INSERT INTO public.diaries (content, user_id, color_id, time_slot) VALUES
+('今日の気分は最高！', 1, 1, 'morning'),
+('朝からちょっと疲れた', 1, 9, 'morning'),
+('仕事が忙しかった', 2, 2, 'afternoon'),
+('友達とランチした', 2, 5, 'afternoon'),
+('運動したら気持ちよかった', 3, 4, 'morning'),
+('読書に没頭した', 3, 6, 'evening'),
+('映画を観た', 4, 3, 'evening'),
+('カフェで勉強した', 4, 5, 'afternoon'),
+('散歩してリフレッシュ', 5, 4, 'morning'),
+('買い物でストレス発散', 5, 7, 'afternoon'),
+('友達とゲームした', 6, 2, 'evening'),
+('料理を作った', 6, 5, 'afternoon'),
+('早起きしてジョギング', 7, 4, 'morning'),
+('音楽を聴いて癒された', 7, 6, 'evening'),
+('ペットと遊んだ', 8, 7, 'afternoon'),
+('新しいスキルを学んだ', 8, 3, 'morning'),
+('夜に日記を書いた', 9, 9, 'evening'),
+('映画館で映画を観た', 9, 2, 'afternoon'),
+('カフェで読書', 10, 6, 'afternoon'),
+('友達とカラオケ', 10, 5, 'evening');
+
+-- さらに複数日のデータを追加したい場合は、日付を指定して created_at を入れることも可能
+-- 例:
+INSERT INTO public.diaries (content, user_id, color_id, time_slot, created_at) VALUES
+('朝から気分が良い', 1, 1, 'morning', '2025-12-01 08:00:00'),
+('昼はランチで満足', 1, 5, 'afternoon', '2025-12-01 12:30:00'),
+('夜に映画鑑賞', 1, 3, 'evening', '2025-12-01 20:00:00');
