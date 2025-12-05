@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 $current_user_id = $_SESSION['user_id'];
 
 // ---------------------------------------------------------
-// DB接続
+// DB接続ここをデプロイする時は変更する
 // ---------------------------------------------------------
 $host = 'dpg-d4g18ebe5dus739hcjrg-a.singapore-postgres.render.com';
 $port = 5432;
