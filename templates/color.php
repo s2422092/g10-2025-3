@@ -6,99 +6,194 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
 }
-
-// ログイン中のユーザーIDを取得
 $user_id = $_SESSION['user_id'];
 
+// DB接続設定
+$host = 'dpg-d4g18ebe5dus739hcjrg-a.singapore-postgres.render.com';
+$port = 5432;
+$dbname = 'g1020253';
+$user = 'g1020253';
+$password = 'C1d8rp3nKUp4Ajdh8NyHUTopXpooYIvA';
+
+$dsn = "pgsql:host=$host;port=$port;dbname=$dbname";
+
+try {
+    $pdo = new PDO($dsn, $user, $password, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+    ]);
+} catch (PDOException $e) {
+    die("DB接続エラー: " . $e->getMessage());
+}
+
+// 色と感情の取得
+try {
+    $stmt = $pdo->query("SELECT emotion_id, feeling_text, color_name, color_code FROM color_emotions_flat ORDER BY id ASC");
+    $color_emotions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    die("色・感情の取得エラー: " . $e->getMessage());
+}
 ?>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>色と感情 詳細</title>
-  <style>
-    .hue-circle {
-      position: relative;
-      width: 600px;    /* 円の直径（拡大） */
-      height: 600px;   /* 円の直径（拡大） */
-      margin: 40px auto;
-      border-radius: 50%;
-    }
-    .hue-dot {
-      /* 丸のサイズ（親に対する割合ではなく固定pxに変更して見やすく） */
-      height: 90px;          /* 拡大 */
-      width: 90px;           /* 拡大 */
-      top: calc(50% - 45px); /* 垂直中央から半径分の調整（高さの半分） */
-      left: calc(50% + 220px); /* 円の中心からの半径（拡大） */
-      transform-origin: -220px center; /* 半径と一致させる */
-      border-radius: 999px;
-      position: absolute;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: default;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>色と感情 詳細</title>
+<style>
+body {
+    margin: 0;
+    font-family: "Hiragino Sans","Helvetica Neue",sans-serif;
+    background: linear-gradient(135deg,#ffdde1,#ee9ca7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    color: #333;
+    text-align: center;
+    transition: background 0.5s ease;
+}
 
-    /* 円配置用の回転（角度はそのまま） */
-    .color-1 { background: rgb(255, 0, 0);    transform: rotate(-0deg); }
-    .color-2 { background: rgb(0, 0, 250);    transform: rotate(-40deg); }
-    .color-3 { background: rgb(255, 255, 0);  transform: rotate(-80deg); }
-    .color-4 { background: rgb(255, 165, 0);  transform: rotate(-120deg); }
-    .color-5 { background: rgb(0, 128, 0);    transform: rotate(-160deg); }
-    .color-6 { background: rgb(255, 20, 147); transform: rotate(-200deg); }
-    .color-7 { background: rgb(211, 211, 211);transform: rotate(-240deg); }
-    .color-8 { background: rgb(128, 0, 128);  transform: rotate(-280deg); }
-    .color-9 { background: rgb(218, 165, 32); transform: rotate(-320deg); }
+h1 {
+    margin-top: 40px;
+    font-size: 2.5em;
+    color: #4a6fa5;
+    text-shadow: 1px 1px 5px rgba(0,0,0,0.1);
+}
 
-    .mouse:hover .word {
-      display: inline;
-    }
+a {
+    text-decoration: none;
+    color: #fff;
+    background: #4d8df5;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: bold;
+    transition: 0.3s;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    margin: 10px;
+}
 
-    .word {
-      position: absolute;
-      display: none;
-      padding: 6px 10px;     /* テキストも少し大きめに */
-      color: rgb(0, 0, 0);
-      border-radius: 8px;
-      background-color: rgba(255, 255, 255, 0.95);
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-      white-space: nowrap;
-      font-size: 14px;       /* 読みやすく拡大 */
-      text-align: center;
-      /* 丸の外側・上部に表示（拡大に合わせて調整） */
-      top: -38px;
-      left: 50%;
-      transform: translateX(-50%);
-      pointer-events: none;
-    }
+a:hover {
+    background: #2f6de0;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.25);
+}
 
-    /* 逆回転でテキストを水平に保つ */
-    .color-1 .word { transform: translateX(-50%) rotate(0deg); }
-    .color-2 .word { transform: translateX(-50%) rotate(40deg); }
-    .color-3 .word { transform: translateX(-50%) rotate(80deg); }
-    .color-4 .word { transform: translateX(-50%) rotate(120deg); }
-    .color-5 .word { transform: translateX(-50%) rotate(160deg); }
-    .color-6 .word { transform: translateX(-50%) rotate(200deg); }
-    .color-7 .word { transform: translateX(-50%) rotate(240deg); }
-    .color-8 .word { transform: translateX(-50%) rotate(280deg); }
-    .color-9 .word { transform: translateX(-50%) rotate(320deg); }
-  </style>
+.hue-circle {
+    position: relative;
+    width: 600px;
+    height: 600px;
+    margin: 60px auto;
+    border-radius: 50%;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.1), transparent 70%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.5s;
+}
+
+.hue-dot {
+    height: 90px;
+    width: 90px;
+    border-radius: 50%;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.5s, box-shadow 0.5s, left 0.5s, top 0.5s;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.hue-dot:hover {
+    transform: scale(1.2);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+.word {
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 12px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    white-space: nowrap;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.hue-dot:hover .word {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-5px);
+}
+
+/* 初期配置用変数 */
+<?php
+$angle = -0;
+foreach ($color_emotions as $index => $ce) {
+    $angle = $index * -40;
+    $color_class = "color-" . ($index + 1);
+    echo ".{$color_class} { background: {$ce['color_code']}; left: calc(50% + 220px * cos(" . deg2rad($angle) . ")); top: calc(50% + 220px * sin(" . deg2rad($angle) . ")); }\n";
+}
+?>
+
+@media(max-width: 700px) {
+  .hue-circle { width: 90vw; height: 90vw; }
+  .hue-dot { width: 14vw; height: 14vw; }
+}
+</style>
 </head>
 <body>
-  <h1>色と感情のつながり</h1>
-  <p><a href="diary.php">日記を書く</a></p>
+<h1>色と感情のつながり</h1>
+<div>
+    <a href="diary.php">日記を書く</a>
+    <a href="home.php">ホームに戻る</a>
+</div>
 
-  <div class="hue-circle hue-4">
-    <div class="hue-dot color-1 mouse"><span class="word">怒り</span></div>
-    <div class="hue-dot color-2 mouse"><span class="word">悲しみ</span></div>
-    <div class="hue-dot color-3 mouse"><span class="word">喜び</span></div>
-    <div class="hue-dot color-4 mouse"><span class="word">楽しい</span></div>
-    <div class="hue-dot color-5 mouse"><span class="word">安らぎ</span></div>
-    <div class="hue-dot color-6 mouse"><span class="word">愛</span></div>
-    <div class="hue-dot color-7 mouse"><span class="word">不安</span></div>
-    <div class="hue-dot color-8 mouse"><span class="word">寂しさ</span></div>
-    <div class="hue-dot color-9 mouse"><span class="word">自信</span></div>
-  </div>
+<div class="hue-circle" id="hueCircle">
+    <?php foreach ($color_emotions as $index => $ce): 
+        $color_class = "color-" . ($index + 1);
+        $feeling = htmlspecialchars($ce['feeling_text']);
+        $color_code = htmlspecialchars($ce['color_code']);
+    ?>
+    <div class="hue-dot <?= $color_class ?>" data-color="<?= $color_code ?>">
+        <span class="word"><?= $feeling ?></span>
+    </div>
+    <?php endforeach; ?>
+</div>
+
+<script>
+const dots = document.querySelectorAll('.hue-dot');
+const body = document.body;
+const circle = document.getElementById('hueCircle');
+
+dots.forEach(dot => {
+    dot.addEventListener('click', () => {
+        // 背景色変更
+        const color = dot.getAttribute('data-color');
+        body.style.background = color + '33';
+
+        // 全てのドットを初期位置に戻す
+        const radius = 220;
+        const centerX = 50;
+        const centerY = 50;
+        dots.forEach((d, i) => {
+            const angle = i * -40;
+            d.style.left = `calc(${centerX}% + ${radius}px * cos(${angle}deg))`;
+            d.style.top = `calc(${centerY}% + ${radius}px * sin(${angle}deg))`;
+        });
+
+        // クリックしたドットを中央に移動
+        dot.style.left = '50%';
+        dot.style.top = '50%';
+    });
+});
+</script>
 </body>
 </html>
